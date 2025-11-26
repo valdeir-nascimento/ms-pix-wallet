@@ -1,6 +1,6 @@
 package br.com.pix.wallet.application.wallet.balance;
 
-import br.com.pix.wallet.application.interfaces.LedgerGateway;
+import br.com.pix.wallet.domain.ledger.LedgerGateway;
 import br.com.pix.wallet.domain.wallet.WalletGateway;
 import br.com.pix.wallet.domain.wallet.WalletID;
 import org.springframework.stereotype.Service;
