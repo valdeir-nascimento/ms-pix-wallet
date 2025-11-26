@@ -1,0 +1,26 @@
+spring:
+  profiles:
+    active: development
+  
+  datasource:
+    url: jdbc:postgresql://${postgres.url}/${postgres.schema}
+    username: ${postgres.username}
+    password: ${postgres.password}
+    hikari:
+      auto-commit: false
+      connection-timeout: 250 # Em ms. Manter baixo para estourar timeout rápido e não prender as threads.
+      max-lifetime: 600000 # Tempo máximo que uma conexão pode ficar aberta (10 min) - segurança.
+      maximum-pool-size: 20 # Máx 20 conexões com o banco. Manter baixo, pois é custoso para o banco gerenciar.
+      minimum-idle: 10
+      pool-name: master
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      "[hibernate.dialect]": org.hibernate.dialect.PostgreSQLDialect
+      "[hibernate.generate_statistics]": false
+      "[hibernate.connection.provider_disables_autocommit]": true
+      # Para aumentar a performance ao máximo, desabilitamos o auto-commit e o open-in-view.
+      # https://vladmihalcea.com/why-you-should-always-use-hibernate-connection-provider_disables_autocommit-for-resource-local-jpa-transactions/

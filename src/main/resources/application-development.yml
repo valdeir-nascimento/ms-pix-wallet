@@ -1,0 +1,5 @@
+postgres:
+  username: pix_user
+  password: pix_password
+  schema: pix_wallet_db
+  url: localhost:5432
