@@ -1,0 +1,11 @@
+postgres:
+  username: ${DATABASE_USERNAME}
+  password: ${DATABASE_PASSWORD}
+  schema: pix_wallet_db
+  url: ${DATABASE_URL}
+
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: none
