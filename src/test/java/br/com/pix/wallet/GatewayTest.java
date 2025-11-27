@@ -15,7 +15,7 @@ import java.lang.annotation.*;
 @ComponentScan(
     basePackages = "br.com.pix.wallet",
     includeFilters = {
-        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".[Gateway]")
+        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*Gateway.*")
     }
 )
 @DataJpaTest
