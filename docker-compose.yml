@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: pix_wallet_app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+      - POSTGRES_URL=postgres:5432
+      - POSTGRES_USERNAME=pix_user
+      - POSTGRES_PASSWORD=pix_password
+      - POSTGRES_SCHEMA=pix_wallet_db
+    depends_on:
+      - postgres
+    networks:
+      - pix_wallet_net
+
+  postgres:
+    image: postgres:15
+    container_name: pix_wallet_container
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pix_wallet_db
+      POSTGRES_USER: pix_user
+      POSTGRES_PASSWORD: pix_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pix_wallet_pg_data:/var/lib/postgresql/data
+    networks:
+      - pix_wallet_net
+
+volumes:
+  pix_wallet_pg_data:
+
+networks:
+  pix_wallet_net:
+    driver: bridge
