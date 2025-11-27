@@ -23,7 +23,6 @@ class PixKeyGatewayIT {
     @Autowired
     private PixKeyGateway pixKeyGateway;
 
-
     @Autowired
     private PixKeyJpaRepository pixKeyJpaRepository;
 

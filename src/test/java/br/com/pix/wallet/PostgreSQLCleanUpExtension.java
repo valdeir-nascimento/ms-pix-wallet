@@ -3,6 +3,7 @@ package br.com.pix.wallet;
 
 import br.com.pix.wallet.infrastructure.persistence.repository.LedgerEntryJpaRepository;
 import br.com.pix.wallet.infrastructure.persistence.repository.PixKeyJpaRepository;
+import br.com.pix.wallet.infrastructure.persistence.repository.PixTransferJpaRepository;
 import br.com.pix.wallet.infrastructure.persistence.repository.WalletJpaRepository;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -20,6 +21,7 @@ public class PostgreSQLCleanUpExtension implements BeforeEachCallback {
         cleanUp(List.of(
             appContext.getBean(LedgerEntryJpaRepository.class),
             appContext.getBean(PixKeyJpaRepository.class),
+            appContext.getBean(PixTransferJpaRepository.class),
             appContext.getBean(WalletJpaRepository.class)
         ));
     }
