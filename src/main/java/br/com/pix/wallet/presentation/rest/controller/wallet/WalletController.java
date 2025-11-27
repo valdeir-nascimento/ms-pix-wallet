@@ -19,13 +19,11 @@ import br.com.pix.wallet.presentation.rest.helper.ApiUriFactory;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Validated
 @RestController
 @RequestMapping("/wallets")
 public class WalletController implements WalletEndpointOpenApi {
@@ -58,7 +56,10 @@ public class WalletController implements WalletEndpointOpenApi {
 
     @Override
     @GetMapping("/{id}/balance")
-    public ResponseEntity<GetBalanceOutput> getBalance(@PathVariable("id") final UUID walletId, @RequestParam(value = "at", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final Instant at) {
+    public ResponseEntity<GetBalanceOutput> getBalance(
+        @PathVariable("id") final UUID walletId,
+        @RequestParam(value = "at", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final Instant at
+    ) {
         final var output = getBalanceUseCase.execute(walletId, at);
         return ResponseEntity.ok(output);
     }
