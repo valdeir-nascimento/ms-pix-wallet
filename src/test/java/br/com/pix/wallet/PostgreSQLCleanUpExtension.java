@@ -2,6 +2,7 @@ package br.com.pix.wallet;
 
 
 import br.com.pix.wallet.infrastructure.persistence.repository.LedgerEntryJpaRepository;
+import br.com.pix.wallet.infrastructure.persistence.repository.WalletJpaRepository;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.data.repository.CrudRepository;
@@ -16,7 +17,8 @@ public class PostgreSQLCleanUpExtension implements BeforeEachCallback {
     public void beforeEach(final ExtensionContext context) {
         final var appContext = SpringExtension.getApplicationContext(context);
         cleanUp(List.of(
-            appContext.getBean(LedgerEntryJpaRepository.class)
+            appContext.getBean(LedgerEntryJpaRepository.class),
+            appContext.getBean(WalletJpaRepository.class)
         ));
     }
 
