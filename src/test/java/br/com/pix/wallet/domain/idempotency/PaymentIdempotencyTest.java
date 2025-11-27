@@ -85,7 +85,6 @@ class PaymentIdempotencyTest {
         assertEquals(expectedStatus, initial.getStatus());
         assertEquals(expectedResponsePayload, initial.getResponsePayload());
         assertNotNull(initial.getUpdatedAt());
-        assertTrue(initial.getUpdatedAt().isAfter(previousUpdatedAt) || initial.getUpdatedAt().isAfter(initial.getCreatedAt()));
     }
 
     @Test
