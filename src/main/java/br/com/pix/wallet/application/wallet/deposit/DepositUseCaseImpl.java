@@ -1,5 +1,6 @@
 package br.com.pix.wallet.application.wallet.deposit;
 
+import br.com.pix.wallet.application.metrics.ApplicationMetrics;
 import br.com.pix.wallet.domain.ledger.LedgerGateway;
 import br.com.pix.wallet.domain.wallet.WalletGateway;
 import br.com.pix.wallet.domain.exception.DomainException;
@@ -18,52 +19,64 @@ public class DepositUseCaseImpl implements DepositUseCase {
 
     private final WalletGateway walletGateway;
     private final LedgerGateway ledgerGateway;
+    private final ApplicationMetrics applicationMetrics;
 
-    public DepositUseCaseImpl(final WalletGateway walletGateway, final LedgerGateway ledgerGateway) {
+    public DepositUseCaseImpl(
+        final WalletGateway walletGateway,
+        final LedgerGateway ledgerGateway,
+        final ApplicationMetrics applicationMetrics
+    ) {
         this.walletGateway = walletGateway;
         this.ledgerGateway = ledgerGateway;
+        this.applicationMetrics = applicationMetrics;
     }
 
     @Override
     @Transactional
     public DepositOutput execute(final DepositCommand command) {
-        final var notification = Notification.create();
+        try {
+            final var notification = Notification.create();
 
-        if (command.amount() == null || command.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            notification.append(Error.of("'amount' must be greater than zero"));
+            if (command.amount() == null || command.amount().compareTo(BigDecimal.ZERO) <= 0) {
+                notification.append(Error.of("'amount' must be greater than zero"));
+            }
+
+            if (notification.hasError()) {
+                throw DomainException.with(notification.getErrors());
+            }
+
+            final var walletId = WalletID.from(command.walletId());
+
+            final var wallet = walletGateway.findByIdWithLock(walletId);
+
+            final var amount = Money.of(command.amount());
+
+            wallet.deposit(amount);
+
+            final var saved = walletGateway.save(wallet);
+
+            final var ledger = LedgerEntry.deposit(
+                saved.getId(),
+                amount,
+                saved.getCurrentBalance()
+            );
+
+            ledger.validate(notification);
+
+            if (notification.hasError()) {
+                throw DomainException.with(notification.getErrors());
+            }
+
+            ledgerGateway.save(ledger);
+            applicationMetrics.recordDepositOperation(true, command.amount());
+
+            return DepositOutput.from(
+                saved.getId().getValue(),
+                saved.getCurrentBalance().getAmount()
+            );
+        } catch (DomainException ex) {
+            applicationMetrics.recordDepositOperation(false, command.amount());
+            throw ex;
         }
-
-        if (notification.hasError()) {
-            throw DomainException.with(notification.getErrors());
-        }
-
-        final var walletId = WalletID.from(command.walletId());
-
-        final var wallet = walletGateway.findByIdWithLock(walletId);
-
-        final var amount = Money.of(command.amount());
-
-        wallet.deposit(amount);
-
-        final var saved = walletGateway.save(wallet);
-
-        final var ledger = LedgerEntry.deposit(
-            saved.getId(),
-            amount,
-            saved.getCurrentBalance()
-        );
-
-        ledger.validate(notification);
-
-        if (notification.hasError()) {
-            throw DomainException.with(notification.getErrors());
-        }
-
-        ledgerGateway.save(ledger);
-
-        return DepositOutput.from(
-            saved.getId().getValue(),
-            saved.getCurrentBalance().getAmount()
-        );
     }
 }

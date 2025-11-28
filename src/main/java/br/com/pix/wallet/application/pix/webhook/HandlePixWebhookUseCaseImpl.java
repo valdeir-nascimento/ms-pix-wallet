@@ -1,5 +1,6 @@
 package br.com.pix.wallet.application.pix.webhook;
 
+import br.com.pix.wallet.application.metrics.ApplicationMetrics;
 import br.com.pix.wallet.domain.pix.transfer.PixTransferGateway;
 import br.com.pix.wallet.domain.pix.webhook.PixWebhookEventGateway;
 import br.com.pix.wallet.domain.exception.DomainException;
@@ -15,18 +16,32 @@ public class HandlePixWebhookUseCaseImpl implements HandlePixWebhookUseCase {
 
     private final PixWebhookEventGateway pixWebhookEventGateway;
     private final PixTransferGateway pixTransferGateway;
+    private final ApplicationMetrics applicationMetrics;
 
-    public HandlePixWebhookUseCaseImpl(final PixWebhookEventGateway pixWebhookEventGateway, final PixTransferGateway pixTransferGateway) {
+    public HandlePixWebhookUseCaseImpl(
+        final PixWebhookEventGateway pixWebhookEventGateway,
+        final PixTransferGateway pixTransferGateway,
+        final ApplicationMetrics applicationMetrics
+    ) {
         this.pixWebhookEventGateway = pixWebhookEventGateway;
         this.pixTransferGateway = pixTransferGateway;
+        this.applicationMetrics = applicationMetrics;
     }
 
     @Override
     @Transactional
     public HandlePixWebhookOutput execute(final HandlePixWebhookCommand command) {
-        return pixWebhookEventGateway.findByEventId(command.eventId())
-            .map(HandlePixWebhookOutput::from)
-            .orElseGet(() -> handleNewEvent(command));
+        try {
+            return pixWebhookEventGateway.findByEventId(command.eventId())
+                .map(existing -> {
+                    applicationMetrics.recordPixWebhookEvent(existing.getType(), "duplicate");
+                    return HandlePixWebhookOutput.from(existing);
+                })
+                .orElseGet(() -> handleNewEvent(command));
+        } catch (DomainException ex) {
+            applicationMetrics.recordPixWebhookEvent(null, "error");
+            throw ex;
+        }
     }
 
     private HandlePixWebhookOutput handleNewEvent(final HandlePixWebhookCommand command) {
@@ -51,6 +66,7 @@ public class HandlePixWebhookUseCaseImpl implements HandlePixWebhookUseCase {
         }
 
         final var saved = pixWebhookEventGateway.save(webhookEvent);
+        applicationMetrics.recordPixWebhookEvent(type, "stored");
 
         return HandlePixWebhookOutput.from(saved);
     }

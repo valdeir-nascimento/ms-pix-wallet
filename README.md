@@ -30,6 +30,8 @@ A estrutura de pacotes reflete as camadas da arquitetura:
 - **Docker & Docker Compose**: Para containerização e orquestração do ambiente de desenvolvimento.
 - **JUnit 5 & Mockito**: Para testes unitários e de integração abrangentes.
 - **SpringDoc OpenAPI (Swagger)**: Para documentação viva e interativa da API.
+- **Spring Boot Actuator + Micrometer**: Exposição de métricas técnicas e de negócio.
+- **Prometheus & Grafana**: Stack de observabilidade pronta para coleta e visualização.
 
 ## 🛠️ Como Executar
 
@@ -44,7 +46,12 @@ A estrutura de pacotes reflete as camadas da arquitetura:
 O projeto já está configurado com um `docker-compose.yml` que sobe tanto a aplicação quanto o banco de dados PostgreSQL.
 
 1.  Clone o repositório.
-2.  Na raiz do projeto, execute:
+2.  (Opcional) Se a porta `8080` já estiver em uso, defina `APP_HTTP_PORT` para outra porta livre, por exemplo:
+    ```bash
+    set APP_HTTP_PORT=8081      # PowerShell / CMD (Windows)
+    export APP_HTTP_PORT=8081   # Linux / macOS
+    ```
+3.  Na raiz do projeto, execute:
 
 ```bash
 docker-compose up -d --build
@@ -55,7 +62,7 @@ Isso irá:
 - Compilar a aplicação.
 - Criar a imagem Docker.
 - Iniciar o container do PostgreSQL.
-- Iniciar o container da aplicação `ms-pix-wallet` na porta `8080`.
+- Iniciar o container da aplicação `ms-pix-wallet` na porta configurada (padrão `8080`).
 
 ### Rodando Localmente (Desenvolvimento)
 
@@ -85,6 +92,35 @@ O projeto possui uma suíte abrangente de testes unitários e de integração. P
 ```bash
 ./mvnw test
 ```
+
+## 🔭 Observabilidade com Prometheus e Grafana
+
+O projeto expõe métricas técnicas e de negócio em `/actuator/prometheus`. O `docker-compose` já inclui Prometheus e Grafana configurados para coleta e visualização:
+
+- **Prometheus**: [http://localhost:9090](http://localhost:9090)
+- **Grafana**: [http://localhost:3000](http://localhost:3000) (credenciais padrão `admin/admin`)
+
+### Métricas disponíveis
+
+| Métrica | Descrição |
+| --- | --- |
+| `pix_wallet_wallet_creation_total{status}` | Total de solicitações de criação de carteiras por status (success/failure) |
+| `pix_wallet_deposit_operations_total{status}` | Operações de depósito com tag de sucesso/erro |
+| `pix_wallet_withdraw_operations_total{status}` | Operações de saque com tag de sucesso/erro |
+| `pix_wallet_pix_transfer_total{status}` | Transferências Pix processadas |
+| `pix_wallet_pix_transfer_amount` | Distribuição dos valores transferidos |
+| `pix_wallet_pix_transfer_duration_seconds` | Tempo gasto no fluxo de transferência |
+| `pix_wallet_webhook_events_total{eventType,status}` | Eventos de webhook processados por tipo |
+
+### Dashboard Grafana
+
+Ao subir o ambiente (`docker-compose up -d --build`), um dashboard chamado **Pix Wallet Overview** é provisionado automaticamente com:
+
+- Taxa de criação de carteiras
+- Throughput e latência do fluxo de Pix
+- Depósitos, saques e webhooks por status/evento
+
+Você pode customizar ou importar o dashboard localizado em `observability/grafana/dashboards/pix-wallet-overview.json`.
 
 ---
 

@@ -16,7 +16,8 @@ import java.lang.annotation.*;
     basePackages = "br.com.pix.wallet",
     includeFilters = {
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*Gateway.*")
-    }
+    },
+    useDefaultFilters = false
 )
 @DataJpaTest
 @ExtendWith(PostgreSQLCleanUpExtension.class)
