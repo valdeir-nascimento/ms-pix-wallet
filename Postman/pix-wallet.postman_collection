@@ -1,0 +1,164 @@
+{
+  "info": {
+    "name": "Pix Wallet Suite",
+    "_postman_id": "c2c8c3f7-7a53-4d8a-9e7c-ec1ce2e8ef00",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "ownerSource", "value": "owner-source-001" },
+    { "key": "ownerDestination", "value": "owner-destination-001" },
+    { "key": "fromWalletId", "value": "" },
+    { "key": "toWalletId", "value": "" },
+    { "key": "depositAmount", "value": "150.00" },
+    { "key": "withdrawAmount", "value": "20.00" },
+    { "key": "transferAmount", "value": "50.00" },
+    { "key": "idempotencyKey", "value": "fd66eb24-2954-4105-a239-865288102cf9" },
+    { "key": "endToEndId", "value": "E1234567820251127205500s0011234567" },
+    { "key": "eventId", "value": "evt-20251127-001" },
+    { "key": "webhookEventType", "value": "CREDIT_CONFIRMED" },
+    { "key": "occurredAt", "value": "2025-11-27T23:55:30Z" }
+  ],
+  "item": [
+    {
+      "name": "Wallets",
+      "item": [
+        {
+          "name": "Create Wallet (Source)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"ownerId\": \"{{ownerSource}}\"\n}"
+            },
+            "url": "{{baseUrl}}/wallets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('fromWalletId', json.walletId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Wallet (Destination)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"ownerId\": \"{{ownerDestination}}\"\n}"
+            },
+            "url": "{{baseUrl}}/wallets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('toWalletId', json.walletId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Wallet Balance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/wallets/{{fromWalletId}}/balance?at={{occurredAt}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallets", "{{fromWalletId}}", "balance"],
+              "query": [{ "key": "at", "value": "{{occurredAt}}" }]
+            }
+          }
+        },
+        {
+          "name": "Deposit Wallet",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": {{depositAmount}}\n}"
+            },
+            "url": "{{baseUrl}}/wallets/{{fromWalletId}}/deposit"
+          }
+        },
+        {
+          "name": "Withdraw Wallet",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": {{withdrawAmount}}\n}"
+            },
+            "url": "{{baseUrl}}/wallets/{{fromWalletId}}/withdraw"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pix Keys",
+      "item": [
+        {
+          "name": "Register Pix Key",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"keyType\": \"EMAIL\",\n    \"keyValue\": \"origem@conta.com\"\n}"
+            },
+            "url": "{{baseUrl}}/wallets/{{fromWalletId}}/pix-keys"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pix Transfers",
+      "item": [
+        {
+          "name": "Create Pix Transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fromWalletId\": \"{{fromWalletId}}\",\n    \"toWalletId\": \"{{toWalletId}}\",\n    \"amount\": {{transferAmount}},\n    \"idempotencyKey\": \"{{idempotencyKey}}\",\n    \"endToEndId\": \"{{endToEndId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/pix/transfers"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pix Webhooks",
+      "item": [
+        {
+          "name": "Handle Pix Webhook",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"eventId\": \"{{eventId}}\",\n    \"endToEndId\": \"{{endToEndId}}\",\n    \"eventType\": \"{{webhookEventType}}\",\n    \"occurredAt\": \"{{occurredAt}}\"\n}"
+            },
+            "url": "{{baseUrl}}/pix/webhooks"
+          }
+        }
+      ]
+    }
+  ]
+}
