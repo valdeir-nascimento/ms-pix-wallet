@@ -1,5 +1,33 @@
 package br.com.pix.wallet.presentation.rest.controller.wallet;
 
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.UUID;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import br.com.pix.wallet.ControllerTest;
 import br.com.pix.wallet.application.wallet.balance.GetBalanceOutput;
 import br.com.pix.wallet.application.wallet.balance.GetBalanceUseCase;
@@ -19,25 +47,6 @@ import br.com.pix.wallet.domain.wallet.Wallet;
 import br.com.pix.wallet.presentation.rest.controller.wallet.request.CreateWalletRequest;
 import br.com.pix.wallet.presentation.rest.controller.wallet.request.DepositRequest;
 import br.com.pix.wallet.presentation.rest.controller.wallet.request.WithdrawRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.UUID;
-
-import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ControllerTest(controllers = WalletController.class)
 class WalletControllerTest {
@@ -94,6 +103,34 @@ class WalletControllerTest {
         // given
         final var expectedOwnerId = "d34c31ee-bdff-4122-8d5c-72f7bef1e1b3";
         final var expectedMessage = "'ownerId' should not be null";
+        final var requestBody = new CreateWalletRequest(expectedOwnerId);
+
+        when(createWalletUseCase.execute(any(CreateWalletCommand.class)))
+            .thenThrow(DomainException.with(new Error(expectedMessage)));
+
+        // when
+        final var request = post("/wallets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(this.mapper.writeValueAsString(requestBody));
+
+        final var response = this.mockMvc.perform(request).andDo(print());
+
+        // then
+        response.andExpect(status().isUnprocessableEntity())
+            .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.message", equalTo(expectedMessage)))
+            .andExpect(jsonPath("$.errors", hasSize(1)))
+            .andExpect(jsonPath("$.errors[0].message", equalTo(expectedMessage)));
+
+        verify(createWalletUseCase, times(1))
+            .execute(argThat(command -> Objects.equals(expectedOwnerId, command.ownerId())));
+    }
+
+    @Test
+    void givenExistingOwnerId_whenCallsCreateWallet_thenShouldReturnDomainException() throws Exception {
+        // given
+        final var expectedOwnerId = "d34c31ee-bdff-4122-8d5c-72f7bef1e1b3";
+        final var expectedMessage = "Owner ID already has a wallet";
         final var requestBody = new CreateWalletRequest(expectedOwnerId);
 
         when(createWalletUseCase.execute(any(CreateWalletCommand.class)))

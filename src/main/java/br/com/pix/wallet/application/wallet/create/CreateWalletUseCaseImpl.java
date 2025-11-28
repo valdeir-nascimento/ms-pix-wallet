@@ -1,5 +1,6 @@
 package br.com.pix.wallet.application.wallet.create;
 
+import br.com.pix.wallet.domain.validation.Error;
 import br.com.pix.wallet.domain.wallet.WalletGateway;
 import br.com.pix.wallet.domain.exception.DomainException;
 import br.com.pix.wallet.domain.validation.handler.Notification;
@@ -20,6 +21,14 @@ public class CreateWalletUseCaseImpl implements CreateWalletUseCase {
     @Transactional
     public CreateWalletOutput execute(final CreateWalletCommand command) {
         final var notification = Notification.create();
+
+        if (walletGateway.existsByOwnerId(command.ownerId())) {
+            notification.append(Error.of("Owner ID already has a wallet"));
+        }
+
+        if (notification.hasError()) {
+            throw DomainException.with(notification.getErrors());
+        }
 
         final var wallet = Wallet.newWallet(command.ownerId());
 
