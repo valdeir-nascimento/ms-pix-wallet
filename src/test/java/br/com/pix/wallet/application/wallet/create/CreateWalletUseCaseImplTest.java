@@ -20,6 +20,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import br.com.pix.wallet.application.metrics.ApplicationMetrics;
 import br.com.pix.wallet.domain.exception.DomainException;
 import br.com.pix.wallet.domain.wallet.Wallet;
 import br.com.pix.wallet.domain.wallet.WalletGateway;
@@ -33,9 +34,12 @@ class CreateWalletUseCaseImplTest {
     @Mock
     private WalletGateway walletGateway;
 
+    @Mock
+    private ApplicationMetrics applicationMetrics;
+
     @BeforeEach
     void cleanUp() {
-        reset(walletGateway);
+        reset(walletGateway, applicationMetrics);
     }
 
     @Test
