@@ -1,6 +1,7 @@
 package br.com.pix.wallet.application.pix.webhook;
 
 import br.com.pix.wallet.application.UseCaseTest;
+import br.com.pix.wallet.application.metrics.ApplicationMetrics;
 import br.com.pix.wallet.domain.exception.DomainException;
 import br.com.pix.wallet.domain.pix.transfer.PixTransfer;
 import br.com.pix.wallet.domain.pix.transfer.PixTransferGateway;
@@ -32,9 +33,12 @@ class HandlePixWebhookUseCaseImplTest extends UseCaseTest {
     @Mock
     private PixTransferGateway pixTransferGateway;
 
+    @Mock
+    private ApplicationMetrics applicationMetrics;
+
     @Override
     protected List<Object> getMocks() {
-        return List.of(pixWebhookEventGateway, pixTransferGateway);
+        return List.of(pixWebhookEventGateway, pixTransferGateway, applicationMetrics);
     }
 
     @Test

@@ -32,6 +32,37 @@ services:
     networks:
       - pix_wallet_net
 
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: pix_wallet_prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - app
+    networks:
+      - pix_wallet_net
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: pix_wallet_grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./observability/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./observability/grafana/dashboards:/etc/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - pix_wallet_net
+
 volumes:
   pix_wallet_pg_data:
 
