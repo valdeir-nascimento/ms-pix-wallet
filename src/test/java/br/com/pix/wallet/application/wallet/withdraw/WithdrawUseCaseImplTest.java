@@ -1,5 +1,6 @@
 package br.com.pix.wallet.application.wallet.withdraw;
 
+import br.com.pix.wallet.application.metrics.ApplicationMetrics;
 import br.com.pix.wallet.domain.common.Money;
 import br.com.pix.wallet.domain.exception.DomainException;
 import br.com.pix.wallet.domain.ledger.LedgerEntry;
@@ -35,9 +36,12 @@ class WithdrawUseCaseImplTest {
     @Mock
     private LedgerGateway ledgerGateway;
 
+    @Mock
+    private ApplicationMetrics applicationMetrics;
+
     @BeforeEach
     void cleanUp() {
-        reset(walletGateway, ledgerGateway);
+        reset(walletGateway, ledgerGateway, applicationMetrics);
     }
 
     @Test

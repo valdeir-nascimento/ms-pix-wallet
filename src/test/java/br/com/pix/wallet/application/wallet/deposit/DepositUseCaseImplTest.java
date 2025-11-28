@@ -1,5 +1,6 @@
 package br.com.pix.wallet.application.wallet.deposit;
 
+import br.com.pix.wallet.application.metrics.ApplicationMetrics;
 import br.com.pix.wallet.domain.ledger.LedgerGateway;
 import br.com.pix.wallet.domain.common.Money;
 import br.com.pix.wallet.domain.exception.DomainException;
@@ -35,9 +36,12 @@ class DepositUseCaseImplTest {
     @Mock
     private LedgerGateway ledgerGateway;
 
+    @Mock
+    private ApplicationMetrics applicationMetrics;
+
     @BeforeEach
     void cleanUp() {
-        reset(walletGateway, ledgerGateway);
+        reset(walletGateway, ledgerGateway, applicationMetrics);
     }
 
     @Test

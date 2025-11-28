@@ -1,6 +1,7 @@
 package br.com.pix.wallet.application.pix.transfer;
 
 import br.com.pix.wallet.application.UseCaseTest;
+import br.com.pix.wallet.application.metrics.ApplicationMetrics;
 import br.com.pix.wallet.domain.common.Money;
 import br.com.pix.wallet.domain.exception.DomainException;
 import br.com.pix.wallet.domain.exception.NotFoundException;
@@ -9,6 +10,8 @@ import br.com.pix.wallet.domain.pix.transfer.PixTransferGateway;
 import br.com.pix.wallet.domain.wallet.Wallet;
 import br.com.pix.wallet.domain.wallet.WalletGateway;
 import br.com.pix.wallet.domain.wallet.WalletID;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -35,9 +38,12 @@ class CreatePixTransferUseCaseImplTest extends UseCaseTest {
     @Mock
     private PixTransferGateway pixTransferGateway;
 
+    @Mock
+    private ApplicationMetrics applicationMetrics;
+
     @Override
     protected List<Object> getMocks() {
-        return List.of(walletGateway, ledgerGateway, pixTransferGateway);
+        return List.of(walletGateway, ledgerGateway, pixTransferGateway, applicationMetrics);
     }
 
     @Test
@@ -56,6 +62,7 @@ class CreatePixTransferUseCaseImplTest extends UseCaseTest {
             expectedIdempotencyKey,
             expectedEndToEndId
         );
+        mockTimer();
 
         final var fromWallet = mock(Wallet.class);
         final var toWallet = mock(Wallet.class);
@@ -105,6 +112,7 @@ class CreatePixTransferUseCaseImplTest extends UseCaseTest {
             expectedEndToEndId);
 
         when(pixTransferGateway.existsByIdempotencyKey(duplicateIdempotencyKey)).thenReturn(true);
+        mockTimer();
 
         // when
         final var exception = assertThrows(DomainException.class, () -> createPixTransferUseCase.execute(command));
@@ -144,6 +152,7 @@ class CreatePixTransferUseCaseImplTest extends UseCaseTest {
         when(fromWallet.getCurrentBalance()).thenReturn(insufficientBalance);
         when(pixTransferGateway.existsByIdempotencyKey(expectedIdempotencyKey)).thenReturn(false);
         when(walletGateway.findByIdWithLock(any())).thenReturn(fromWallet, toWallet);
+        mockTimer();
 
         // when
         final var exception = assertThrows(DomainException.class, () -> createPixTransferUseCase.execute(command));
@@ -180,6 +189,7 @@ class CreatePixTransferUseCaseImplTest extends UseCaseTest {
 
         when(pixTransferGateway.existsByIdempotencyKey(expectedIdempotencyKey)).thenReturn(false);
         when(walletGateway.findByIdWithLock(any())).thenThrow(NotFoundException.class);
+        mockTimer();
 
         // when
         final var exception = assertThrows(NotFoundException.class, () -> createPixTransferUseCase.execute(command));
@@ -216,6 +226,7 @@ class CreatePixTransferUseCaseImplTest extends UseCaseTest {
         when(walletGateway.findByIdWithLock(any()))
             .thenReturn(fromWallet)
             .thenThrow(NotFoundException.class);
+        mockTimer();
 
         // when
         final var exception = assertThrows(NotFoundException.class, () -> createPixTransferUseCase.execute(command));
@@ -227,5 +238,9 @@ class CreatePixTransferUseCaseImplTest extends UseCaseTest {
         verify(walletGateway, never()).save(any());
         verify(ledgerGateway, never()).save(any());
         verify(pixTransferGateway, never()).save(any());
+    }
+
+    private void mockTimer() {
+        when(applicationMetrics.startPixTransferTimer()).thenReturn(Timer.start(new SimpleMeterRegistry()));
     }
 }
