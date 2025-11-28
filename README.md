@@ -46,12 +46,8 @@ A estrutura de pacotes reflete as camadas da arquitetura:
 O projeto já está configurado com um `docker-compose.yml` que sobe tanto a aplicação quanto o banco de dados PostgreSQL.
 
 1.  Clone o repositório.
-2.  (Opcional) Se a porta `8080` já estiver em uso, defina `APP_HTTP_PORT` para outra porta livre, por exemplo:
-    ```bash
-    set APP_HTTP_PORT=8081      # PowerShell / CMD (Windows)
-    export APP_HTTP_PORT=8081   # Linux / macOS
-    ```
-3.  Na raiz do projeto, execute:
+
+2. Na raiz do projeto, execute:
 
 ```bash
 docker-compose up -d --build
