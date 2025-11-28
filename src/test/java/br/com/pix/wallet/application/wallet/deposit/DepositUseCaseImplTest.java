@@ -1,14 +1,14 @@
 package br.com.pix.wallet.application.wallet.deposit;
 
+import br.com.pix.wallet.application.UseCaseTest;
 import br.com.pix.wallet.application.metrics.ApplicationMetrics;
-import br.com.pix.wallet.domain.ledger.LedgerGateway;
 import br.com.pix.wallet.domain.common.Money;
 import br.com.pix.wallet.domain.exception.DomainException;
 import br.com.pix.wallet.domain.ledger.LedgerEntry;
+import br.com.pix.wallet.domain.ledger.LedgerGateway;
 import br.com.pix.wallet.domain.wallet.Wallet;
 import br.com.pix.wallet.domain.wallet.WalletGateway;
 import br.com.pix.wallet.domain.wallet.WalletID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,7 +26,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DepositUseCaseImplTest {
+class DepositUseCaseImplTest extends UseCaseTest {
 
     @InjectMocks
     private DepositUseCaseImpl useCase;
@@ -39,10 +40,11 @@ class DepositUseCaseImplTest {
     @Mock
     private ApplicationMetrics applicationMetrics;
 
-    @BeforeEach
-    void cleanUp() {
-        reset(walletGateway, ledgerGateway, applicationMetrics);
+    @Override
+    protected List<Object> getMocks() {
+        return List.of(walletGateway, ledgerGateway, applicationMetrics);
     }
+
 
     @Test
     void givenValidCommand_whenCallsExecute_thenShouldDepositMoney() {
@@ -98,10 +100,10 @@ class DepositUseCaseImplTest {
         final var expectedWalletId = UUID.randomUUID();
         final var expectedAmount = BigDecimal.valueOf(100.00);
         final var command = DepositCommand.with(expectedWalletId.toString(), expectedAmount);
-        final var expectedErrorMessage = "Wallet with ID %s was not found".formatted(expectedWalletId);
+        final var expectedErrorMessage = "Wallet with ID %s was not found" .formatted(expectedWalletId);
 
         when(walletGateway.findByIdWithLock(any(WalletID.class)))
-                .thenThrow(DomainException.with(br.com.pix.wallet.domain.validation.Error.of(expectedErrorMessage)));
+            .thenThrow(DomainException.with(br.com.pix.wallet.domain.validation.Error.of(expectedErrorMessage)));
 
         // when
         final var actualException = assertThrows(DomainException.class, () -> useCase.execute(command));

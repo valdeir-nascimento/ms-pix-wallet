@@ -1,12 +1,12 @@
 package br.com.pix.wallet.application.wallet.balance;
 
-import br.com.pix.wallet.domain.ledger.LedgerGateway;
+import br.com.pix.wallet.application.UseCaseTest;
 import br.com.pix.wallet.domain.common.Money;
 import br.com.pix.wallet.domain.ledger.LedgerEntry;
+import br.com.pix.wallet.domain.ledger.LedgerGateway;
 import br.com.pix.wallet.domain.wallet.Wallet;
 import br.com.pix.wallet.domain.wallet.WalletGateway;
 import br.com.pix.wallet.domain.wallet.WalletID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,7 +24,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class GetBalanceUseCaseImplTest {
+class GetBalanceUseCaseImplTest extends UseCaseTest {
 
     @InjectMocks
     private GetBalanceUseCaseImpl useCase;
@@ -34,9 +35,9 @@ class GetBalanceUseCaseImplTest {
     @Mock
     private LedgerGateway ledgerGateway;
 
-    @BeforeEach
-    void cleanUp() {
-        reset(walletGateway, ledgerGateway);
+    @Override
+    protected List<Object> getMocks() {
+        return List.of(walletGateway, ledgerGateway);
     }
 
     @Test
