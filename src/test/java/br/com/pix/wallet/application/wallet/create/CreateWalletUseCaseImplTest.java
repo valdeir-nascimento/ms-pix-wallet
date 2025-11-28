@@ -1,10 +1,13 @@
 package br.com.pix.wallet.application.wallet.create;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import br.com.pix.wallet.application.UseCaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +29,7 @@ import br.com.pix.wallet.domain.wallet.Wallet;
 import br.com.pix.wallet.domain.wallet.WalletGateway;
 
 @ExtendWith(MockitoExtension.class)
-class CreateWalletUseCaseImplTest {
+class CreateWalletUseCaseImplTest extends UseCaseTest {
 
     @InjectMocks
     private CreateWalletUseCaseImpl useCase;
@@ -37,9 +40,9 @@ class CreateWalletUseCaseImplTest {
     @Mock
     private ApplicationMetrics applicationMetrics;
 
-    @BeforeEach
-    void cleanUp() {
-        reset(walletGateway, applicationMetrics);
+    @Override
+    protected List<Object> getMocks() {
+        return List.of(walletGateway, applicationMetrics);
     }
 
     @Test
