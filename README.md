@@ -30,6 +30,7 @@ A estrutura de pacotes reflete as camadas da arquitetura:
 - **Docker & Docker Compose**: Para containerização e orquestração do ambiente de desenvolvimento.
 - **JUnit 5 & Mockito**: Para testes unitários e de integração abrangentes.
 - **SpringDoc OpenAPI (Swagger)**: Para documentação viva e interativa da API.
+- **Spring Security 6 + JWT**: Autenticação/autorização com controle de acesso baseado em papéis.
 - **Spring Boot Actuator + Micrometer**: Exposição de métricas técnicas e de negócio.
 - **Prometheus & Grafana**: Stack de observabilidade pronta para coleta e visualização.
 
@@ -88,6 +89,15 @@ O projeto possui uma suíte abrangente de testes unitários e de integração. P
 ```bash
 ./mvnw test
 ```
+
+## 🔐 Segurança e Controle de Acesso
+
+- Fluxo stateless baseado em **JWT**. Obtenha tokens via `POST /auth/login` usando credenciais registradas (`POST /auth/register` ou usuário bootstrap).
+- Papéis disponíveis: `ADMIN` (geral) e `OPERATOR` (operações Pix e saldo).
+- As rotas administrativas (`/wallets/**`) exigem `ROLE_ADMIN`. Operações Pix/Wallet de saldo exigem `ROLE_ADMIN` ou `ROLE_OPERATOR`.
+- Configure o segredo do JWT e usuário bootstrap via propriedades (`pix.wallet.security.*`) ou variáveis de ambiente (`JWT_SECRET`, `BOOTSTRAP_ADMIN_*`). Exemplos já estão no `docker-compose.yml`.
+- **Importante**: o `JWT_SECRET` precisa ter pelo menos 32 caracteres (recomendado 64). O perfil de desenvolvimento já fornece um valor seguro, porém em qualquer ambiente real defina a variável antes de subir a aplicação.
+- Para chamadas autenticadas adicione o header `Authorization: Bearer <token>`.
 
 ## 🔭 Observabilidade com Prometheus e Grafana
 

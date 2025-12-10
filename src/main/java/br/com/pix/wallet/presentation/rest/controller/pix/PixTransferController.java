@@ -8,6 +8,7 @@ import br.com.pix.wallet.presentation.rest.controller.pix.request.CreatePixTrans
 import br.com.pix.wallet.presentation.rest.helper.ApiUriFactory;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,7 @@ public class PixTransferController implements PixTransferEndpointOpenApi {
 
     @Override
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','OPERATOR')")
     public ResponseEntity<CreatePixTransferOutput> createPixTransfer(@Valid @RequestBody final CreatePixTransferRequest request) {
         final var command = CreatePixTransferCommand.with(
             request.fromWalletId(),

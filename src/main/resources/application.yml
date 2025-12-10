@@ -45,3 +45,18 @@ management:
     metrics:
       export:
         enabled: true
+
+pix:
+  wallet:
+    security:
+      enabled: true
+      jwt:
+        secret: ${JWT_SECRET:fd66eb24-2954-4105-a239-865288102cf9fd66eb24-2954-4105-a239-865288102cf9}
+        expirationMinutes: 60
+      bootstrapUser:
+        enabled: true
+        username: admin
+        password: admin123
+        roles:
+          - ADMIN
+          - OPERATOR
