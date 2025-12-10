@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Validação de mensagem de commit no padrão convencional para uso com GitFlow.
+# Formato: <tipo>(escopo opcional): descrição
+# Tipos aceitos: feat, fix, chore, docs, refactor, test, perf, build, ci, style, revert
+
+commit_msg_file="$1"
+commit_msg="$(cat "$commit_msg_file")"
+
+pattern='^(feat|fix|chore|docs|refactor|test|perf|build|ci|style|revert)(\([A-Za-z0-9._-]+\))?: .{1,72}$'
+
+if ! printf '%s\n' "$commit_msg" | grep -Eq "$pattern"; then
+  cat <<'EOF'
+✖ Commit message inválida.
+Use: <tipo>(escopo opcional): descrição
+Tipos: feat|fix|chore|docs|refactor|test|perf|build|ci|style|revert
+Exemplos:
+  feat(api): adiciona endpoint de transferência pix
+  fix(wallet): corrige cálculo de saldo
+EOF
+  exit 1
+fi
+
+exit 0
+

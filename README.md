@@ -131,3 +131,14 @@ Você pode customizar ou importar o dashboard localizado em `observability/grafa
 ---
 
 Desenvolvido com 💙 por Valdeir Nascimento.
+
+## 🧭 Padrão de GitFlow + Commits Convencionais
+
+- Branches: `main` (produção), `develop` (integração), `feature/*`, `release/*`, `hotfix/*`.
+- Mensagem de commit (convencional): `<tipo>(escopo opcional): descrição`
+  - Tipos: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `perf`, `build`, `ci`, `style`, `revert`
+  - Ex.: `feat(api): adiciona endpoint de transferência pix`
+- Validação automática: já existe hook em `.githooks/commit-msg`.
+  - Ative uma vez: `git config core.hooksPath .githooks`
+  - Garanta execução (Linux/macOS): `chmod +x .githooks/commit-msg`
+  - Em Windows via PowerShell/Git Bash funciona sem ajustes adicionais.
