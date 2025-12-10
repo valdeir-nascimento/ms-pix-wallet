@@ -7,3 +7,8 @@ postgres:
   password: pix_password
   schema: pix_wallet_db
   url: localhost:5432
+
+pix:
+  wallet:
+    security:
+      enabled: false

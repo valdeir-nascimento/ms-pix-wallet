@@ -11,6 +11,10 @@ import java.math.BigDecimal;
 @Component
 public class ApplicationMetrics {
 
+    private static final String STATUS = "status";
+    private static final String SUCCESS = "success";
+    private static final String FAILURE = "failure";
+
     private final MeterRegistry meterRegistry;
     private final DistributionSummary pixTransferAmountSummary;
     private final Timer pixTransferTimer;
@@ -44,12 +48,12 @@ public class ApplicationMetrics {
     }
 
     public void recordWalletCreation(final boolean success) {
-        meterRegistry.counter("pix_wallet_wallet_creation_total", "status", success ? "success" : "failure")
+        meterRegistry.counter("pix_wallet_wallet_creation_total", STATUS, success ? SUCCESS : FAILURE)
             .increment();
     }
 
     public void recordDepositOperation(final boolean success, final BigDecimal amount) {
-        meterRegistry.counter("pix_wallet_deposit_operations_total", "status", success ? "success" : "failure")
+        meterRegistry.counter("pix_wallet_deposit_operations_total", STATUS, success ? SUCCESS : FAILURE)
             .increment();
         if (success && amount != null) {
             depositAmountSummary.record(amount.doubleValue());
@@ -57,7 +61,7 @@ public class ApplicationMetrics {
     }
 
     public void recordWithdrawOperation(final boolean success, final BigDecimal amount) {
-        meterRegistry.counter("pix_wallet_withdraw_operations_total", "status", success ? "success" : "failure")
+        meterRegistry.counter("pix_wallet_withdraw_operations_total", STATUS, success ? SUCCESS : FAILURE)
             .increment();
         if (success && amount != null) {
             withdrawAmountSummary.record(amount.doubleValue());
@@ -73,7 +77,7 @@ public class ApplicationMetrics {
         final boolean success,
         final BigDecimal amount
     ) {
-        meterRegistry.counter("pix_wallet_pix_transfer_total", "status", success ? "success" : "failure")
+        meterRegistry.counter("pix_wallet_pix_transfer_total", STATUS, success ? SUCCESS : FAILURE)
             .increment();
 
         if (success && amount != null) {
@@ -91,4 +95,5 @@ public class ApplicationMetrics {
             .increment();
     }
 }
+
 

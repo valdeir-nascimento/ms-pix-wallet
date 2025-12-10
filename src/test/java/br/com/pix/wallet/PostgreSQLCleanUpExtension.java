@@ -20,7 +20,8 @@ public class PostgreSQLCleanUpExtension implements BeforeEachCallback {
             appContext.getBean(PixKeyJpaRepository.class),
             appContext.getBean(PixTransferJpaRepository.class),
             appContext.getBean(WalletJpaRepository.class),
-            appContext.getBean(PixWebhookEventJpaRepository.class)
+            appContext.getBean(PixWebhookEventJpaRepository.class),
+            appContext.getBean(UserAccountJpaRepository.class)
         ));
     }
 

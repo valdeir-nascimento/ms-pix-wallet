@@ -1,11 +1,12 @@
 {
   "info": {
-    "name": "Pix Wallet Suite",
-    "_postman_id": "c2c8c3f7-7a53-4d8a-9e7c-ec1ce2e8ef00",
+    "name": "Pix Wallet Secured",
+    "_postman_id": "5bda5bd9-3ac8-4f49-8d5b-3a81d5d6a123",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "appPort", "value": "8080" },
+    { "key": "baseUrl", "value": "http://localhost:{{appPort}}" },
     { "key": "ownerSource", "value": "owner-source-001" },
     { "key": "ownerDestination", "value": "owner-destination-001" },
     { "key": "fromWalletId", "value": "" },
@@ -17,9 +18,43 @@
     { "key": "endToEndId", "value": "E1234567820251127205500s0011234567" },
     { "key": "eventId", "value": "evt-20251127-001" },
     { "key": "webhookEventType", "value": "CREDIT_CONFIRMED" },
-    { "key": "occurredAt", "value": "2025-11-27T23:55:30Z" }
+    { "key": "occurredAt", "value": "2025-11-27T23:55:30Z" },
+    { "key": "accessToken", "value": "" }
   ],
   "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\",\n  \"roles\": [\"ADMIN\",\"OPERATOR\"]\n}" },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}" },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "const json = pm.response.json();",
+                "pm.collectionVariables.set('accessToken', json.accessToken);"
+              ]
+            }
+          }]
+        }
+      ]
+    },
     {
       "name": "Wallets",
       "item": [
@@ -27,71 +62,63 @@
           "name": "Create Wallet (Source)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"ownerId\": \"{{ownerSource}}\"\n}"
-            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"ownerId\": \"{{ownerSource}}\" }" },
             "url": "{{baseUrl}}/wallets"
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const json = pm.response.json();",
-                  "pm.collectionVariables.set('fromWalletId', json.walletId);"
-                ]
-              }
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "const json = pm.response.json();",
+                "pm.collectionVariables.set('fromWalletId', json.walletId);"
+              ]
             }
-          ]
+          }]
         },
         {
           "name": "Create Wallet (Destination)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"ownerId\": \"{{ownerDestination}}\"\n}"
-            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"ownerId\": \"{{ownerDestination}}\" }" },
             "url": "{{baseUrl}}/wallets"
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const json = pm.response.json();",
-                  "pm.collectionVariables.set('toWalletId', json.walletId);"
-                ]
-              }
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "const json = pm.response.json();",
+                "pm.collectionVariables.set('toWalletId', json.walletId);"
+              ]
             }
-          ]
+          }]
         },
         {
           "name": "Get Wallet Balance",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/wallets/{{fromWalletId}}/balance?at={{occurredAt}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["wallets", "{{fromWalletId}}", "balance"],
-              "query": [{ "key": "at", "value": "{{occurredAt}}" }]
-            }
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/wallets/{{fromWalletId}}/balance"
           }
         },
         {
           "name": "Deposit Wallet",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"amount\": {{depositAmount}}\n}"
-            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"amount\": {{depositAmount}} }" },
             "url": "{{baseUrl}}/wallets/{{fromWalletId}}/deposit"
           }
         },
@@ -99,11 +126,11 @@
           "name": "Withdraw Wallet",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"amount\": {{withdrawAmount}}\n}"
-            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"amount\": {{withdrawAmount}} }" },
             "url": "{{baseUrl}}/wallets/{{fromWalletId}}/withdraw"
           }
         }
@@ -116,11 +143,11 @@
           "name": "Register Pix Key",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"keyType\": \"EMAIL\",\n    \"keyValue\": \"origem@conta.com\"\n}"
-            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"keyType\": \"EMAIL\", \"keyValue\": \"origem@conta.com\" }" },
             "url": "{{baseUrl}}/wallets/{{fromWalletId}}/pix-keys"
           }
         }
@@ -133,11 +160,11 @@
           "name": "Create Pix Transfer",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"fromWalletId\": \"{{fromWalletId}}\",\n    \"toWalletId\": \"{{toWalletId}}\",\n    \"amount\": {{transferAmount}},\n    \"idempotencyKey\": \"{{idempotencyKey}}\",\n    \"endToEndId\": \"{{endToEndId}}\"\n}"
-            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"fromWalletId\": \"{{fromWalletId}}\",\n  \"toWalletId\": \"{{toWalletId}}\",\n  \"amount\": {{transferAmount}},\n  \"idempotencyKey\": \"{{idempotencyKey}}\",\n  \"endToEndId\": \"{{endToEndId}}\"\n}" },
             "url": "{{baseUrl}}/pix/transfers"
           }
         }
@@ -150,11 +177,11 @@
           "name": "Handle Pix Webhook",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"eventId\": \"{{eventId}}\",\n    \"endToEndId\": \"{{endToEndId}}\",\n    \"eventType\": \"{{webhookEventType}}\",\n    \"occurredAt\": \"{{occurredAt}}\"\n}"
-            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"endToEndId\": \"{{endToEndId}}\",\n  \"eventType\": \"{{webhookEventType}}\",\n  \"occurredAt\": \"{{occurredAt}}\"\n}" },
             "url": "{{baseUrl}}/pix/webhooks"
           }
         }
